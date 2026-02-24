@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Data — downloaded automatically by torchvision
+data/
+
+# Checkpoints — large binary files, track manually if needed
+checkpoints/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Environments
+.env
+.venv
+venv/
+env/
+
+# VS Code
+.vscode/
+
+# Colab temporary files
+*.tmp
