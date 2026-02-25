@@ -44,36 +44,35 @@ class SimpleCNN(nn.Module):
 
 
 class DeepCNN(nn.Module):
-    """4-block wider CNN (~2 M params)."""
+    """4-block deeper CNN with narrower channels (~250K params)."""
     def __init__(self, num_classes=10):
         super().__init__()
         self.features = nn.Sequential(
-            ConvBnRelu(3, 64),    ConvBnRelu(64, 64),    nn.MaxPool2d(2), nn.Dropout2d(0.2),
-            ConvBnRelu(64, 128),  ConvBnRelu(128, 128),  nn.MaxPool2d(2), nn.Dropout2d(0.2),
-            ConvBnRelu(128, 256), ConvBnRelu(256, 256),  nn.MaxPool2d(2), nn.Dropout2d(0.2),
-            ConvBnRelu(256, 512), ConvBnRelu(512, 512),
+            ConvBnRelu(3, 16),   ConvBnRelu(16, 16),   nn.MaxPool2d(2), nn.Dropout2d(0.2),
+            ConvBnRelu(16, 32),  ConvBnRelu(32, 32),   nn.MaxPool2d(2), nn.Dropout2d(0.2),
+            ConvBnRelu(32, 64),  ConvBnRelu(64, 64),   nn.MaxPool2d(2), nn.Dropout2d(0.2),
+            ConvBnRelu(64, 96),  ConvBnRelu(96, 96),
         )
         self.head = nn.Sequential(
             nn.AdaptiveAvgPool2d(1), nn.Flatten(),
-            nn.Dropout(0.5), nn.Linear(512, 256), nn.ReLU(inplace=True),
-            nn.Linear(256, num_classes),
+            nn.Linear(96, num_classes),
         )
     def forward(self, x):
         return self.head(self.features(x))
 
 
 class ResNetCIFAR(nn.Module):
-    """Lightweight ResNet for 32x32 inputs (~1.2 M params)."""
-    def __init__(self, num_classes=10, n_blocks=2):
+    """Lightweight ResNet for 32x32 inputs (~316K params)."""
+    def __init__(self, num_classes=10):
         super().__init__()
-        self.stem   = ConvBnRelu(3, 64)
-        self.stage1 = nn.Sequential(*[ResBlock(64)  for _ in range(n_blocks)])
-        self.down1  = ConvBnRelu(64, 128, stride=2)
-        self.stage2 = nn.Sequential(*[ResBlock(128) for _ in range(n_blocks)])
-        self.down2  = ConvBnRelu(128, 256, stride=2)
-        self.stage3 = nn.Sequential(*[ResBlock(256) for _ in range(n_blocks)])
+        self.stem   = ConvBnRelu(3, 32)
+        self.stage1 = nn.Sequential(ResBlock(32), ResBlock(32))
+        self.down1  = ConvBnRelu(32, 64, stride=2)
+        self.stage2 = nn.Sequential(ResBlock(64), ResBlock(64))
+        self.down2  = ConvBnRelu(64, 64, stride=2)
+        self.stage3 = nn.Sequential(ResBlock(64))
         self.head   = nn.Sequential(nn.AdaptiveAvgPool2d(1), nn.Flatten(),
-                                    nn.Linear(256, num_classes))
+                                    nn.Linear(64, num_classes))
     def forward(self, x):
         x = self.stage1(self.stem(x))
         x = self.stage2(self.down1(x))
